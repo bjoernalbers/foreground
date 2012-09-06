@@ -1,2 +1,2 @@
 #!/bin/sh
-sudo gem install bundler && bundle install --path vendor --binstubs
+sudo gem install bundler && bundle install --path vendor --binstubs && git reset --hard HEAD

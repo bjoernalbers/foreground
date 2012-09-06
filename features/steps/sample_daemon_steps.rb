@@ -3,17 +3,34 @@ def sample_daemons
   proclist.to_a.grep(%r{^\s*\d+\s+ruby\s+.*foreground_sample_daemon$}) { |l| l[/^\s*(\d+)\s+/,1].to_i }
 end
 
+def kill_foreground
+  if @foreground
+    Process.kill(:TERM, @foreground) unless Process.waitpid(@foreground, Process::WNOHANG)
+  end
+end
+
 After do
+  kill_foreground
   sample_daemons.each { |pid| system("kill #{pid}") }
 end
 
-Then /^the sample should run$/ do
+When /^I run the sample daemon via foreground$/ do
+  @foreground = fork do
+    exec('foreground --pid_file /tmp/foreground_sample_daemon.pid foreground_sample_daemon')
+  end
+end
+
+When /^I kill foreground$/ do
+  kill_foreground
+end
+
+Then /^the sample daemon should run$/ do
   steps %q{
     Then 1 sample daemon should run
   }
 end
 
-Then /^no sample daemon should run$/ do
+Then /^the sample daemon should not run$/ do
   steps %q{
     Then 0 sample daemon should run
   }
