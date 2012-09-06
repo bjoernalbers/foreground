@@ -8,7 +8,7 @@ Gem::Specification.new do |gem|
   gem.version       = Foreground::VERSION
   gem.authors       = ["Bjo\314\210rn Albers"]
   gem.email         = ['bjoernalbers@googlemail.com']
-  gem.description   = 'Control daemonized background processes with launchd.'
+  gem.description   = 'Control daemonizing background processes with launchd.'
   gem.summary       = "#{gem.name}-#{gem.version}"
   gem.homepage      = 'https://github.com/bjoernalbers/foreground'
 

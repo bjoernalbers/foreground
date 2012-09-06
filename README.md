@@ -1,6 +1,6 @@
 # foreground
 
-Control daemonized background processes with launchd.
+Control daemonizing background processes with launchd.
 
 ## Introduction
 
