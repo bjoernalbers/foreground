@@ -7,7 +7,7 @@ After do
   sample_daemons.each { |pid| system("kill #{pid}") }
 end
 
-Then /^the sample should run$/ do
+Then /^the sample daemon should run$/ do
   steps %q{
     Then 1 sample daemon should run
   }
