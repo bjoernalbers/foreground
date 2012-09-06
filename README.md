@@ -35,7 +35,9 @@ You can't control the daemons stdout, stderr, etc. this way, because the daemon 
 
 ## Contributing
 
-1. Fork it and `script/bootstrap` your environment
+1. Fork it and `script/bootstrap` your environment (Note: This also
+   performs a hard git reset to restore `bin/foreground_sample_daemon`,
+   which gets overwritten by bundler!)
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Added some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
