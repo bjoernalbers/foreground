@@ -1,0 +1,27 @@
+#!/usr/bin/env ruby
+
+# Run only run one daemon at a time.
+pid_file = "/tmp/#{File.basename($PROGRAM_NAME)}.pid"
+if File.exists?(pid_file)
+  puts "PID file exists already!" 
+  exit
+end
+
+# Daemonize
+if RUBY_VERSION < "1.9"
+  exit if fork
+  Process.setsid
+  exit if fork
+  STDIN.reopen "/dev/null"
+  STDOUT.reopen "/dev/null", "a"
+  STDERR.reopen "/dev/null", "a"
+else
+  Process.daemon
+end
+
+# Forked childs write a PID file on startup and remove it at exit.
+File.open(pid_file, 'w') { |f| f.puts(Process.pid) }
+at_exit { File.delete(pid_file) }
+
+# Finally run the lazy daemon
+loop { sleep 1 }
