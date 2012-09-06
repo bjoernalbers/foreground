@@ -8,5 +8,5 @@ Feature: Start and stop
     When I run the sample daemon via foreground
     Then the sample daemon should run
 
-    #When I kill foreground
-    #Then the sample daemon should not run
+    When I kill foreground
+    Then the sample daemon should not run
