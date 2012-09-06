@@ -15,5 +15,5 @@ Feature: Sample daemon
     Then the sample daemon should run
 
   Scenario: Don't mess up the system with running sample daemons
-    Then no sample daemon should run
+    Then the sample daemon should not run
     And a file named "/tmp/foreground_sample_daemon.pid" should not exist
