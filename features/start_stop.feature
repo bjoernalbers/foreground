@@ -9,4 +9,7 @@ Feature: Start and stop
     Then the sample daemon should run
 
     When I kill foreground
-    Then the sample daemon should not run
+    And I run `sleep 1`
+    Then foreground should not run
+    And the sample daemon should not run
+    And the sample daemon should have received a TERM signal

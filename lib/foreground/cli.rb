@@ -20,17 +20,31 @@ module Foreground
       watch
     end
 
+    #TODO: Test this!
+    def log(msg)
+      puts msg
+      File.open('/tmp/foreground.log', 'a') do |f|
+        f.puts msg
+      end
+    end
+
     def watch
       ### <proof_of_concept>
       #TODO: Unhackify this block of code!
       STDOUT.sync = true
-      puts "hi, there!"
+      log "hi, there (foreground #{Foreground::VERSION})!"
       trap(:TERM) do
-        sleep 3 # Give the daemon time to write its PID file.
+        log "Inside trap..."
+        sleep 0.1 # Give the daemon time to write its PID file.
         if File.exists?(config[:pid_file])
+          log "pid file >#{config[:pid_file]} exists."
           pid = File.read(config[:pid_file]).chomp.to_i
+          log "killing process with PID >#{pid}<"
           Process.kill(:TERM, pid)
+          log "after kill"
         end
+        log "running exit"
+        exit
       end
       ### </proof_of_concept>
 
