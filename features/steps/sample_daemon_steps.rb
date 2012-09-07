@@ -9,15 +9,34 @@ def kill_foreground
   end
 end
 
+def kill_all_sample_daemons(signal=:TERM)
+  sample_daemons.each { |pid| system("kill -#{signal} #{pid}") }
+  sleep 1 # Give the daemons time to say goodbye.
+end
+
 After do
   kill_foreground
-  sample_daemons.each { |pid| system("kill #{pid}") }
+  kill_all_sample_daemons
+end
+
+When /^I run the sample daemon$/ do
+  steps %q{
+    When I successfully run `foreground_sample_daemon`
+  }
 end
 
 When /^I run the sample daemon via foreground$/ do
   @foreground = fork do
     exec('foreground --pid_file /tmp/foreground_sample_daemon.pid foreground_sample_daemon')
   end
+end
+
+When /^I kill the sample daemon$/ do
+  kill_all_sample_daemons
+end
+
+When /^I send the sample daemon a (\w+) signal$/ do |signal|
+  kill_all_sample_daemons(signal.to_sym)
 end
 
 When /^I kill foreground$/ do
