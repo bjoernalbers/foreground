@@ -1,12 +1,14 @@
 #!/usr/bin/env ruby
 
 # Files
-pid_file = "/tmp/#{File.basename($PROGRAM_NAME)}.pid"
-log_file = "/tmp/#{File.basename($PROGRAM_NAME)}.log"
+name = File.basename($PROGRAM_NAME)
+$PROGRAM_NAME=name
+pid_file = "/tmp/#{name}.pid"
+log_file = "/tmp/#{name}.log"
 
 # Run only run one daemon at a time.
 if File.exists?(pid_file)
-  puts "PID file exists already!" 
+  File.open(log_file, 'a') { |f| f.puts "PID file exists already!" }
   exit
 end
 

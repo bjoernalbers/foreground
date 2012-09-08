@@ -18,6 +18,14 @@ Feature: Start and stop
     And the sample daemon should have received a TERM signal
 
     Examples:
-      | signal | run_or_not |
-      | TERM   | not run    |
-      | INT    | not run    |
+      | signal |
+      | TERM   |
+      | INT    |
+
+  Scenario: Refresh sample daemon via foreground
+    Given I run the sample daemon via foreground
+    When I send foreground a HUP signal
+    And I run `sleep 1`
+    Then foreground should run
+    And the sample daemon should run
+    And the sample daemon should have received a HUP signal

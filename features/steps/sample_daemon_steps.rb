@@ -2,14 +2,20 @@ STDOUT.sync = true # for debugging
 
 def sample_daemons
   proclist = `/bin/ps -A -o pid,command`
-  proclist.to_a.grep(%r{^\s*\d+\s+ruby\s+.*foreground_sample_daemon$}) { |l| l[/^\s*(\d+)\s+/,1].to_i }
+  proclist.to_a.grep(%r{^\s*\d+\s+foreground_sample_daemon\s*$}) { |l| l[/^\s*(\d+)\s+/,1].to_i }
 end
 
 def kill_foreground(signal = :TERM)
   if @foreground
+    #TODO: Replace sleep with a timeout!
+    sleep 2 # Give foreground some time to setup signal handling... or tests might break.
     begin
       Process.kill(signal, @foreground)
-      Process.waitpid(@foreground)
+      if signal.to_sym == :HUP
+        sleep 1
+      else
+        Process.waitpid(@foreground)
+      end
     rescue Errno::ESRCH, Errno::ECHILD
     end
   end
@@ -17,6 +23,7 @@ end
 
 def kill_all_sample_daemons(signal=:TERM)
   sample_daemons.each { |pid| system("kill -#{signal} #{pid}") }
+  #TODO: Replace sleep with a timeout!
   sleep 1 # Give the process time to say goodbye.
 end
 
@@ -47,17 +54,17 @@ end
 
 When /^I kill foreground$/ do
   steps %q{
-    When I send foreground a TERM signaf
+    When I send foreground a TERM signal
   }
 end
 
 When /^I send foreground a (\w+) signal$/ do |signal|
-  sleep 1 # Give foreground some time to setup signal handling... or tests might break.
   kill_foreground(signal)
 end
 
 Then /^foreground should run$/ do
-  lambda { Process.kill(0, @foreground) }.should_not raise_error(Errno::ESRCH)
+  lambda { Process.kill(0, @foreground) }.should_not raise_error(Errno::ESRCH),
+    "No such foreground process with PID #{@foreground}"
 end
 
 Then /^foreground should not run$/ do
@@ -80,6 +87,8 @@ Then /^the sample daemon should not run$/ do
 end
 
 Then /^(\d+) sample daemons? should run$/ do |expected|
+  #TODO: Replace sleep with a timeout!
+  sleep 2 # some time to start the daemon
   expected = expected.to_i
   actual = sample_daemons.count
   actual.should eql(expected),

@@ -5,4 +5,9 @@ module Foreground
       exit
     end
   end
+
+  trap(:HUP) do
+    sleep 1
+    Daemon.kill(:HUP)
+  end
 end
