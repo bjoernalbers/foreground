@@ -1,6 +1,13 @@
 module Foreground
-  trap(:TERM) do
-    Daemon.kill(:TERM)
-    exit
+  [:TERM, :INT].each do |signal|
+    trap(signal) do
+      Daemon.kill(:TERM)
+      exit
+    end
+  end
+
+  trap(:HUP) do
+    sleep 1
+    Daemon.kill(:HUP)
   end
 end
