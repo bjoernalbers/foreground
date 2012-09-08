@@ -16,40 +16,7 @@ module Foreground
 
     def run(argv)
       cmd = parse_options(argv)
-      system(cmd.shelljoin)
-      watch
-    end
-
-    #TODO: Test this!
-    def log(msg)
-      puts msg
-      File.open('/tmp/foreground.log', 'a') do |f|
-        f.puts msg
-      end
-    end
-
-    def watch
-      ### <proof_of_concept>
-      #TODO: Unhackify this block of code!
-      STDOUT.sync = true
-      log "hi, there (foreground #{Foreground::VERSION})!"
-      trap(:TERM) do
-        log "Inside trap..."
-        sleep 0.1 # Give the daemon time to write its PID file.
-        if File.exists?(config[:pid_file])
-          log "pid file >#{config[:pid_file]} exists."
-          pid = File.read(config[:pid_file]).chomp.to_i
-          log "killing process with PID >#{pid}<"
-          Process.kill(:TERM, pid)
-          log "after kill"
-        end
-        log "running exit"
-        exit
-      end
-      ### </proof_of_concept>
-
-      #TODO: Implement watch feature!
-      loop { sleep 1 }
+      Daemon.run(cmd, config[:pid_file])
     end
   end
 end
