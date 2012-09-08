@@ -5,10 +5,10 @@ def sample_daemons
   proclist.to_a.grep(%r{^\s*\d+\s+ruby\s+.*foreground_sample_daemon$}) { |l| l[/^\s*(\d+)\s+/,1].to_i }
 end
 
-def kill_foreground
+def kill_foreground(signal = :TERM)
   if @foreground
     begin
-      Process.kill(:TERM, @foreground)
+      Process.kill(signal, @foreground)
       Process.waitpid(@foreground)
     rescue Errno::ESRCH, Errno::ECHILD
     end
@@ -46,8 +46,18 @@ When /^I send the sample daemon a (\w+) signal$/ do |signal|
 end
 
 When /^I kill foreground$/ do
-  sleep 1 # Give foreground some time to setup signal handling... or tests will break.
-  kill_foreground
+  steps %q{
+    When I send foreground a TERM signaf
+  }
+end
+
+When /^I send foreground a (\w+) signal$/ do |signal|
+  sleep 1 # Give foreground some time to setup signal handling... or tests might break.
+  kill_foreground(signal)
+end
+
+Then /^foreground should run$/ do
+  lambda { Process.kill(0, @foreground) }.should_not raise_error(Errno::ESRCH)
 end
 
 Then /^foreground should not run$/ do
