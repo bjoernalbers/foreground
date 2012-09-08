@@ -14,11 +14,21 @@ module Foreground
     end
 
     describe '.run' do
-      it 'should run a new instance' do
+      it 'should run and register a new instance' do
         daemon = mock('daemon')
         daemon.should_receive(:run)
         Daemon.should_receive(:new).with(*@args).and_return(daemon)
+        Daemon.daemon.should be_nil
         Daemon.run(*@args)
+        Daemon.daemon.should be(daemon)
+      end
+    end
+
+    describe '.kill' do
+      it 'should forward signals to the daemon' do
+        Daemon.daemon = mock('daemon')
+        Daemon.daemon.should_receive(:kill).with(:FOO)
+        Daemon.kill(:FOO)
       end
     end
 

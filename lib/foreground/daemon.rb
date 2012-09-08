@@ -2,11 +2,21 @@ require 'foreground'
 
 module Foreground
   class Daemon
+    @daemon = nil
+
     class << self
+      attr_accessor :daemon
+
       def run(*args)
-        new(*args).run
+        @daemon = new(*args)
+        @daemon.run
+      end
+
+      def kill(*args)
+        @daemon.kill(*args)
       end
     end
+
 
     def initialize(cmd, pid_file)
       @cmd = cmd
@@ -16,14 +26,6 @@ module Foreground
     def run
       STDOUT.sync = true
       puts "hi, there (foreground #{Foreground::VERSION})!"
-
-      #TODO: Move signal handling into separate file!
-      trap(:TERM) do
-        #Process.kill(:TERM, pid)
-        kill
-        exit
-      end
-
       system(*@cmd)
       watch
     end
