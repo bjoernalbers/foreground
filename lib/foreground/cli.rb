@@ -16,26 +16,7 @@ module Foreground
 
     def run(argv)
       cmd = parse_options(argv)
-      system(cmd.shelljoin)
-      watch
-    end
-
-    def watch
-      ### <proof_of_concept>
-      #TODO: Unhackify this block of code!
-      STDOUT.sync = true
-      puts "hi, there!"
-      trap(:TERM) do
-        sleep 3 # Give the daemon time to write its PID file.
-        if File.exists?(config[:pid_file])
-          pid = File.read(config[:pid_file]).chomp.to_i
-          Process.kill(:TERM, pid)
-        end
-      end
-      ### </proof_of_concept>
-
-      #TODO: Implement watch feature!
-      loop { sleep 1 }
+      Daemon.run(cmd, config[:pid_file])
     end
   end
 end

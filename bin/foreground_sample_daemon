@@ -1,7 +1,10 @@
 #!/usr/bin/env ruby
 
-# Run only run one daemon at a time.
+# Files
 pid_file = "/tmp/#{File.basename($PROGRAM_NAME)}.pid"
+log_file = "/tmp/#{File.basename($PROGRAM_NAME)}.log"
+
+# Run only run one daemon at a time.
 if File.exists?(pid_file)
   puts "PID file exists already!" 
   exit
@@ -19,9 +22,23 @@ else
   Process.daemon
 end
 
-# Forked childs write a PID file on startup and remove it at exit.
-File.open(pid_file, 'w') { |f| f.puts(Process.pid) }
+# Register signal handlers.
 at_exit { File.delete(pid_file) }
+[:TERM, :INT, :QUIT, :HUP].each do |signal|
+  trap(signal) do
+    File.open(log_file, 'a') do |f|
+      f.puts "Daemon received #{signal} signal."
+      f.puts "Daemon #{(signal == :HUP && 'refreshed') || 'stopped'}."
+    end
+    exit unless signal == :HUP
+  end
+end
+
+# Forked childs write a PID file on startup.
+File.open(pid_file, 'w') { |f| f.puts(Process.pid) }
+
+# Overwrite log file.
+File.open(log_file, 'w') { |f| f.puts 'Daemon started...' }
 
 # Finally run the lazy daemon
 loop { sleep 1 }

@@ -3,10 +3,9 @@ require 'spec_helper'
 module Foreground
   describe CLI do
     before do
-      CLI.stub(:system)
+      Daemon.stub(:run)
       @argv = ['--pid_file', '/tmp/foreground_sample_daemon.pid', 'foreground_sample_daemon']
       @cli = CLI.new
-      @cli.stub(:watch) # ...or we'll wait forever.
     end
 
     describe '.run' do
@@ -25,12 +24,7 @@ module Foreground
       end
 
       it 'should run the daemon' do
-        @cli.should_receive(:system).with('foreground_sample_daemon')
-        @cli.run(@argv)
-      end
-
-      it 'should watch the daemon' do
-        @cli.should_receive(:watch)
+        Daemon.should_receive(:run).with(['foreground_sample_daemon'], '/tmp/foreground_sample_daemon.pid')
         @cli.run(@argv)
       end
     end
