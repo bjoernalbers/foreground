@@ -8,41 +8,10 @@ end
 def kill_foreground
   if @foreground
     begin
-      puts "Killing foreground with PID #{@foreground}"
       Process.kill(:TERM, @foreground)
       Process.waitpid(@foreground)
-      puts 'foreground successfully killed.'
     rescue Errno::ESRCH, Errno::ECHILD
-      puts 'foreground already killed.'
     end
-
-    #<debug>
-    #puts "Killing foreground with PID #{@foreground}..."
-    #begin
-    #  Process.kill(:TERM, @foreground)
-    #rescue Errno::ESRCH
-    #  puts "Already killed."
-    #end
-    #
-    #begin
-    #  puts "Waiting for process to end..."
-    #  sleep 1
-    #  break Process.waitpid(@foreground)
-    #  puts "After break!?"
-    #rescue Errno::ECHILD
-    #  puts "Process already gone."
-    #  break
-    #end while true
-    #
-    #begin
-    #  puts "Waiting even further... (after Process.waitpid)"
-    #  sleep 1
-    #  Process.kill(0, @foreground)
-    #rescue Errno::ESRCH
-    #  puts "Hopefully finally gone."
-    #  break
-    #end while true
-    #</debug>
   end
 end
 
