@@ -14,35 +14,31 @@ module Foreground
     end
 
     def run
+      STDOUT.sync = true
+      puts "hi, there (foreground #{Foreground::VERSION})!"
+
+      #TODO: Move signal handling into separate file!
+      trap(:TERM) do
+        #Process.kill(:TERM, pid)
+        kill
+        exit
+      end
+
       system(*@cmd)
-      watch # TEST THIS!
+      watch
     end
 
-    #TODO: Test this!
-    def log(msg)
-      puts msg
+    def kill(signal = :TERM)
+      Process.kill(signal, pid)
+    end
+
+    def pid
+      #TODO: Replace sleep with timeout!
+      sleep 0.1 # Give the daemon time to write its PID file.
+      File.read(@pid_file).chomp.to_i
     end
 
     def watch
-      ### <proof_of_concept>
-      #TODO: Unhackify this block of code!
-      STDOUT.sync = true
-      log "hi, there (foreground #{Foreground::VERSION})!"
-      trap(:TERM) do
-        log "Inside trap..."
-        sleep 0.1 # Give the daemon time to write its PID file.
-        if File.exists?(@pid_file)
-          log "pid file >#{@pid_file} exists."
-          pid = File.read(@pid_file).chomp.to_i
-          log "killing process with PID >#{pid}<"
-          Process.kill(:TERM, pid)
-          log "after kill"
-        end
-        log "running exit"
-        exit
-      end
-      ### </proof_of_concept>
-
       #TODO: Implement watch feature!
       loop { sleep 1 }
     end
