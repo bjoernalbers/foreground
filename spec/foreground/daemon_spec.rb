@@ -48,10 +48,42 @@ module Foreground
       end
     end
 
+    describe '#read_pid' do
+      context 'with existing PID file' do
+        it 'should return the PID' do
+          File.should_receive(:read).with(@pid_file).and_return("#{@pid}\n")
+          @daemon.send(:read_pid).should eql(@pid)
+        end
+      end
+
+      context 'with unreadable PID' do
+        it 'should raise error' do
+          File.should_receive(:read).with(@pid_file).and_return('fortytwo')
+          lambda { @daemon.send(:read_pid) }.should raise_error(DaemonError, /pid not readable from #{@pid_file}/i)
+        end
+      end
+    end
+
     describe '#pid' do
-      it 'should return the daemons PID by PID file' do
-        File.should_receive(:read).with(@pid_file).and_return("#{@pid}\n")
-        @daemon.pid.should eql(@pid)
+      context 'with readable PID' do
+        it 'should cache and return the PID' do
+          @daemon.should_receive(:read_pid).once.and_return(@pid)
+          2.times { @daemon.pid.should eql(@pid) }
+        end
+      end
+
+      context 'with unreadable PID' do
+        it 'should rescue and retry after sleep' do
+          @daemon.should_receive(:read_pid).and_raise(StandardError)
+          @daemon.should_receive(:sleep).with(0.1).and_return(nil)
+          @daemon.pid
+        end
+
+        it 'should reraise last exception after 2 seconds' do
+          @daemon.stub(:read_pid).and_raise(Errno::ENOENT)
+          @daemon.should_receive(:sleep).with(0.1).exactly(20).times.and_return(true)
+          lambda { @daemon.pid }.should raise_error(Errno::ENOENT)
+        end
       end
     end
   end
