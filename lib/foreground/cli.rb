@@ -8,6 +8,12 @@ module Foreground
       :description => 'PID file for the daemon',
       :required => true
 
+    option :command,
+      :short => '-c COMMAND',
+      :long  => '--command COMMAND',
+      :description => 'Daemon command line',
+      :required => true
+
     option :timeout,
       :short => '-t SECONDS',
       :long  => '--timeout SECONDS',
@@ -25,7 +31,7 @@ module Foreground
     def run(argv)
       cmd = parse_options(argv)
       Foreground.config = config
-      Daemon.run(cmd, config[:pid_file])
+      Daemon.run(config[:command], config[:pid_file])
     end
   end
 end

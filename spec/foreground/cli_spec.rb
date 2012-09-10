@@ -4,7 +4,8 @@ module Foreground
   describe CLI do
     before do
       Daemon.stub(:run)
-      @argv = ['--pid_file', '/tmp/foreground_sample_daemon.pid', 'foreground_sample_daemon']
+      @cmd = 'foreground_sample_daemon --with "some arguments"'
+      @argv = ['--pid_file', '/tmp/foreground_sample_daemon.pid', '--command', @cmd]
       @cli = CLI.new
     end
 
@@ -29,7 +30,7 @@ module Foreground
       end
 
       it 'should run the daemon' do
-        Daemon.should_receive(:run).with(['foreground_sample_daemon'], '/tmp/foreground_sample_daemon.pid')
+        Daemon.should_receive(:run).with(@cmd, '/tmp/foreground_sample_daemon.pid')
         @cli.run(@argv)
       end
     end

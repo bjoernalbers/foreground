@@ -40,7 +40,7 @@ end
 
 When /^I run the sample daemon via foreground$/ do
   @foreground = fork do
-    exec('foreground', '--pid_file', '/tmp/foreground_sample_daemon.pid', 'foreground_sample_daemon')
+    exec('foreground', '--pid_file', '/tmp/foreground_sample_daemon.pid', '--command', 'foreground_sample_daemon')
   end
 end
 

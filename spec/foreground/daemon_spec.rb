@@ -4,7 +4,8 @@ module Foreground
   describe Daemon do
     before do
       Process.stub(:kill)
-      @cmd = ['some_daemon', '--with', 'arguments']
+      #@cmd = ['some_daemon', '--with', 'arguments']
+      @cmd = 'some_daemon --with "many arguments"'
       @pid_file = 'some_daemon.pid'
       @pid = 42
       @args = [@cmd, @pid_file]
@@ -34,7 +35,7 @@ module Foreground
 
     describe '#run' do
       it 'should run and watch the daemon' do
-        @daemon.should_receive(:system).with(*@cmd).ordered
+        @daemon.should_receive(:system).with(@cmd).ordered
         @daemon.should_receive(:watch).ordered
         @daemon.run
       end
