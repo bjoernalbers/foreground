@@ -8,6 +8,14 @@ module Foreground
       :description => 'PID file for the daemon',
       :required => true
 
+    option :timeout,
+      :short => '-t SECONDS',
+      :long  => '--timeout SECONDS',
+      :description => 'Timeout for the daemon to generate a valid PID file',
+      :required => false,
+      :default => 2,
+      :proc => Proc.new { |t| t.to_i }
+
     class << self
       def run(argv=ARGV)
         new.run(argv)

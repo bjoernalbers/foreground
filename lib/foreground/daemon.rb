@@ -41,12 +41,10 @@ module Foreground
       return @pid unless @pid.nil?
       elapsed_time = 0
       sleep_time = 0.1
-      #TODO: make timeout configurable with option!
-      timeout = 2.0
       begin
         break if @pid = read_pid
       rescue
-        raise unless elapsed_time < timeout
+        raise unless elapsed_time < Foreground.config[:timeout]
         elapsed_time += sleep_time
       end while sleep(sleep_time) # ...stupping sleep breaks loop within specs.
       @pid
