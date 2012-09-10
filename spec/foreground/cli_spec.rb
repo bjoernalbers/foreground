@@ -23,6 +23,11 @@ module Foreground
         @cli.run(@argv)
       end
 
+      it 'should make the config globally available' do
+        @cli.run(@argv)
+        Foreground.config.should eql(@cli.config)
+      end
+
       it 'should run the daemon' do
         Daemon.should_receive(:run).with(['foreground_sample_daemon'], '/tmp/foreground_sample_daemon.pid')
         @cli.run(@argv)

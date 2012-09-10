@@ -16,6 +16,7 @@ module Foreground
 
     def run(argv)
       cmd = parse_options(argv)
+      Foreground.config = config
       Daemon.run(cmd, config[:pid_file])
     end
   end

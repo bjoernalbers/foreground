@@ -5,6 +5,11 @@ require 'foreground/daemon'
 require 'foreground/cli'
 
 module Foreground
+  class << self
+    # The global configuration based on command line options.
+    attr_accessor :config
+  end
+
   def logger
     @logger ||= create_logger
   end
