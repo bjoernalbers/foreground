@@ -41,6 +41,25 @@ module Foreground
       end
     end
 
+    describe '#watch' do
+      before do
+        @daemon = Daemon.new(@cmd, @pid_file)
+        @daemon.stub(:pid).and_return(@pid)
+      end
+
+      it 'should sleep if the daemon is still alive' do
+        @daemon.should_receive(:sleep).with(10).and_return(nil)
+        Process.should_receive(:kill).with(0, @pid).and_return(1)
+        @daemon.watch
+      end
+
+      it 'should raise error if the daemon is not alive' do
+        @daemon.should_not_receive(:sleep)
+        Process.should_receive(:kill).with(0, @pid).and_raise(Errno::ESRCH)
+        lambda { @daemon.watch }.should raise_error(DaemonError, /no process with pid #{@pid} found/i)
+      end
+    end
+
     describe '#kill' do
       it 'should send the daemon a SIGTERM' do
         @daemon.stub(:pid).and_return(42)

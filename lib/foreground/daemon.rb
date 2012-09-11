@@ -46,13 +46,17 @@ module Foreground
       rescue
         raise unless elapsed_time < Foreground.config[:timeout]
         elapsed_time += sleep_time
-      end while sleep(sleep_time) # ...stupping sleep breaks loop within specs.
+      end while sleep(sleep_time)
       @pid
     end
 
     def watch
-      #TODO: Implement watch feature!
-      loop { sleep 1 }
+      watch_interval = 10
+      begin
+        kill(0)
+      rescue Errno::ESRCH
+        raise DaemonError, "No process with PID #{pid} found."
+      end while sleep(watch_interval)
     end
 
     private
