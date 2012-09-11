@@ -1,6 +1,8 @@
 require 'foreground'
 
 module Foreground
+  class DaemonError < StandardError; end
+
   class Daemon
     @daemon = nil
 
@@ -34,15 +36,35 @@ module Foreground
       Process.kill(signal, pid)
     end
 
+    #TODO: Add scenario for this stuff!
     def pid
-      #TODO: Replace sleep with timeout!
-      sleep 0.1 # Give the daemon time to write its PID file.
-      File.read(@pid_file).chomp.to_i
+      return @pid unless @pid.nil?
+      elapsed_time = 0
+      sleep_time = 0.1
+      begin
+        break if @pid = read_pid
+      rescue
+        raise unless elapsed_time < Foreground.config[:timeout]
+        elapsed_time += sleep_time
+      end while sleep(sleep_time)
+      @pid
     end
 
     def watch
-      #TODO: Implement watch feature!
-      loop { sleep 1 }
+      watch_interval = 10
+      begin
+        kill(0)
+      rescue Errno::ESRCH
+        raise DaemonError, "No process with PID #{pid} found."
+      end while sleep(watch_interval)
+    end
+
+    private
+
+    def read_pid
+      pid = File.read(@pid_file).to_i
+      raise DaemonError, "PID not readable from #{@pid_file}" unless pid > 0
+      pid
     end
   end
 end

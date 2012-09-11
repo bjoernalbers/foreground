@@ -4,7 +4,8 @@ module Foreground
   describe Daemon do
     before do
       Process.stub(:kill)
-      @cmd = ['some_daemon', '--with', 'arguments']
+      #@cmd = ['some_daemon', '--with', 'arguments']
+      @cmd = 'some_daemon --with "many arguments"'
       @pid_file = 'some_daemon.pid'
       @pid = 42
       @args = [@cmd, @pid_file]
@@ -34,9 +35,28 @@ module Foreground
 
     describe '#run' do
       it 'should run and watch the daemon' do
-        @daemon.should_receive(:system).with(*@cmd).ordered
+        @daemon.should_receive(:system).with(@cmd).ordered
         @daemon.should_receive(:watch).ordered
         @daemon.run
+      end
+    end
+
+    describe '#watch' do
+      before do
+        @daemon = Daemon.new(@cmd, @pid_file)
+        @daemon.stub(:pid).and_return(@pid)
+      end
+
+      it 'should sleep if the daemon is still alive' do
+        @daemon.should_receive(:sleep).with(10).and_return(nil)
+        Process.should_receive(:kill).with(0, @pid).and_return(1)
+        @daemon.watch
+      end
+
+      it 'should raise error if the daemon is not alive' do
+        @daemon.should_not_receive(:sleep)
+        Process.should_receive(:kill).with(0, @pid).and_raise(Errno::ESRCH)
+        lambda { @daemon.watch }.should raise_error(DaemonError, /no process with pid #{@pid} found/i)
       end
     end
 
@@ -48,10 +68,42 @@ module Foreground
       end
     end
 
+    describe '#read_pid' do
+      context 'with existing PID file' do
+        it 'should return the PID' do
+          File.should_receive(:read).with(@pid_file).and_return("#{@pid}\n")
+          @daemon.send(:read_pid).should eql(@pid)
+        end
+      end
+
+      context 'with unreadable PID' do
+        it 'should raise error' do
+          File.should_receive(:read).with(@pid_file).and_return('fortytwo')
+          lambda { @daemon.send(:read_pid) }.should raise_error(DaemonError, /pid not readable from #{@pid_file}/i)
+        end
+      end
+    end
+
     describe '#pid' do
-      it 'should return the daemons PID by PID file' do
-        File.should_receive(:read).with(@pid_file).and_return("#{@pid}\n")
-        @daemon.pid.should eql(@pid)
+      context 'with readable PID' do
+        it 'should cache and return the PID' do
+          @daemon.should_receive(:read_pid).once.and_return(@pid)
+          2.times { @daemon.pid.should eql(@pid) }
+        end
+      end
+
+      context 'with unreadable PID' do
+        it 'should rescue and retry after sleep' do
+          @daemon.should_receive(:read_pid).and_raise(StandardError)
+          @daemon.should_receive(:sleep).with(0.1).and_return(nil)
+          @daemon.pid
+        end
+
+        it 'should reraise last exception after 2 seconds' do
+          @daemon.stub(:read_pid).and_raise(Errno::ENOENT)
+          @daemon.should_receive(:sleep).with(0.1).exactly(20).times.and_return(true)
+          lambda { @daemon.pid }.should raise_error(Errno::ENOENT)
+        end
       end
     end
   end

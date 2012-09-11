@@ -27,7 +27,7 @@ Install it via RubyGems:
 
 Wrap your daemon command inside your launchd.plist:
 
-    foreground --pid_file /tmp/foreground_sample_daemon.pid foreground_sample_daemon
+    foreground --pid_file /tmp/foreground_sample_daemon.pid --command "foreground_sample_daemon --with arguments"
 
 ## Limitations
 

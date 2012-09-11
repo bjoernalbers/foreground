@@ -1,7 +1,7 @@
 module Foreground
   [:TERM, :INT].each do |signal|
     trap(signal) do
-      Daemon.kill(:TERM)
+      Daemon.kill(:TERM) rescue Errno::ESRCH
       exit
     end
   end

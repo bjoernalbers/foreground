@@ -1,4 +1,4 @@
-Feature: Start and stop
+Feature: Start and stop daemon
 
   In order to start and stop a background daemon
   As a funky user
